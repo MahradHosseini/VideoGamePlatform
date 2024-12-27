@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Games</title>
+</head>
+<body>
+<form method="POST" action="/creategame">
+    <p>Title: <input type="text" name="title"></p>
+    <p>Price: <input type="text" name="price"></p>
+    {% for genre in genres %}
+    <p>genres: <input type="checkbox" name="genre[]" value="{{genre}}"></p>
+    {% end for %}
+    <p>Description: <input type="text" name="description"></p>
+	<p>Full Release <input type="radio" name="release" value="Yes" />Yes <input type="radio" name="release" value="No" /> No</p>
+    <input type="submit" value="Add Game">
+</form>
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Price</th>
+        <th>Genres</th>
+        <th>Delete</th>
+    </tr>
+    {% for game in publishedGames %}
+    <tr>
+        <td>{{game[1]}}</td>
+        <td>{{game[2]}}</td>
+        <td>{{game[3]}}</td>
+        <td>
+        <form method="GET" action="/deleteGame">
+            <input type="hidden" name="gameID" value="{{game[0]}}">
+        </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

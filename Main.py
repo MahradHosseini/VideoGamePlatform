@@ -106,6 +106,37 @@ def deleteGenre():
 
     return redirect(url_for("manageGenres"))
 
+@app.route("/myProfile", methods=["GET", "POST"])
+def myProfile():
+    username = session.get("username", None)
+
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+    c.execute("SELECT name, email FROM User WHERE username = ?", (username,))
+
+    row = c.fetchone()
+    name = row[0]
+    email = row[1]
+
+    conn.close()
+    return render_template("myProfile.html", username=username, name=name, email=email)
+
+@app.route("/changePassword", methods=["POST"])
+def changePassword():
+    try:
+        newPassword = request.form["password"]
+        username = session.get("username", None)
+
+        conn = sqlite3.connect("PlatformDB.db")
+        c = conn.cursor()
+        c.execute("UPDATE User SET password = ? WHERE username = ?", (newPassword, username))
+
+        conn.commit()
+        conn.close()
+        return redirect(url_for("myProfile") + "?status=success")
+    except Exception as e:
+        print(e)
+        return redirect(url_for("myProfile" + "?status=failure"))
 
 if __name__ == "__main__":
     app.run()

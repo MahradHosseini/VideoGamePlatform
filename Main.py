@@ -138,5 +138,14 @@ def changePassword():
         print(e)
         return redirect(url_for("myProfile" + "?status=failure"))
 
+@app.route("/search", methods=["GET", "POST"])
+def search():
+    pass
+
+
+@app.route("/querySearch", methods=["POST"])
+def querySearch():
+    pass
+
 if __name__ == "__main__":
     app.run()

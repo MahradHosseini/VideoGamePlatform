@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search</title>
+</head>
+<body>
+<h1>Search</h1>
+<form method="POST" action="{{ url_for('querySearch') }}">
+    <label for="keyword">Keyword</label>
+    <input type="text" name="keyword" id="keyword">
+    <label><input type="radio" name="genre" value="All Genres" required>All Genres</label><br>
+    {% for genre in genres %}
+    <label><input type="radio" name="genre" value="{{ genre }}">{{ genre }}</label><br>
+    {% endfor %}
+</form>
+{% if allGenre %}
+{% for genre in genres %}
+<h2>{{ genre }}</h2>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Genre</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for game in genre.games %}
+    <tr>
+        <td>{{game.title}}</td>
+        <td>{{game.description}}</td>
+        <td>{{game.genre}}</td>
+        <td><a>See More</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endfor %}
+{% else %}
+
+{% endif %}
+</body>
+</html>

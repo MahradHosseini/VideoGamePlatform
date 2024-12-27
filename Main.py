@@ -15,14 +15,14 @@ def applyregistration():
         password = request.form["pwd"]
         fullname = request.form["fullname"]
         emailaddress = request.form["emailaddress"]
-        isadmin = bool(re.search("\w+@game.metu.edu.tr",emailaddress))
+        isadmin = bool(re.search(r"\w+@game.metu.edu.tr",emailaddress))
         #check password
 
         conn = sqlite3.connect("PlatformDB.db")
         c = conn.cursor()
         c.execute("SELECT * FROM User WHERE username=? AND password=?", (username, password))
         row = c.fetchone()
-        if row != None:
+        if row is not None:
             return render_template("registration.html", msg="User already exist!")
 
         c.execute("INSERT INTO User VALUES(?,?,?,?,?)", (username, password, fullname, emailaddress, isadmin))
@@ -62,6 +62,27 @@ def login():
 def logout():
     session.pop("username","")
     return redirect(url_for("homePage"))
+
+@app.route("/manageGenres", methods = ["GET", "POST"])
+def manageGenres():
+
+    username = session.get("username", None)
+    isAdmin = session.get("isAdmin", False)
+
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+
+    if request.method == "POST":
+        genreName = request.form["genre"]
+        c.execute("INSERT INTO Genres(name) VALUES(?)", (genreName,))
+        conn.commit()
+        return render_template(url_for("manageGenres"))
+
+
+    genres = c.execute("SELECT name FROM Genres)").fetchall()
+    genreList = [row["name"] for row in genres]
+    return render_template("manageGenres.html", username=username, genres=genreList, isAdmin=isAdmin)
+
 
 if __name__ == "__main__":
     app.run()

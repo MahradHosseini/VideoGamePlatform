@@ -65,23 +65,46 @@ def logout():
 
 @app.route("/manageGenres", methods = ["GET", "POST"])
 def manageGenres():
-
     username = session.get("username", None)
     isAdmin = session.get("isAdmin", False)
 
     conn = sqlite3.connect("PlatformDB.db")
     c = conn.cursor()
 
-    if request.method == "POST":
-        genreName = request.form["genre"]
-        c.execute("INSERT INTO Genres(name) VALUES(?)", (genreName,))
-        conn.commit()
-        return render_template(url_for("manageGenres"))
+    genres = c.execute("SELECT name FROM Genre").fetchall()
+    genreList = [row[0] for row in genres]
 
-
-    genres = c.execute("SELECT name FROM Genres)").fetchall()
-    genreList = [row["name"] for row in genres]
+    conn.close()
     return render_template("manageGenres.html", username=username, genres=genreList, isAdmin=isAdmin)
+
+@app.route("/addGenre", methods=["POST"])
+def addGenre():
+    if 'username' not in session or not session.get("isAdmin", False):
+        return "Access denied", 403
+
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+
+    genreName = request.form["genre"]
+    c.execute("INSERT INTO Genre(name) VALUES(?)", (genreName,))
+
+    conn.commit()
+    conn.close()
+    return redirect(url_for("manageGenres"))
+
+@app.route("/deleteGenre", methods=["POST"])
+def deleteGenre():
+    if 'username' not in session or not session.get("isAdmin", False):
+        return "Access denied", 403
+
+    genreToDelete = request.form["genre"]
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+    c.execute("DELETE FROM Genre Where name = ?", (genreToDelete,))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("manageGenres"))
 
 
 if __name__ == "__main__":

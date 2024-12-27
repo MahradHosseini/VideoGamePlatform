@@ -91,5 +91,5 @@ def insertRecords(dbName):
 
 
 if __name__ == "__main__":
-    createDB("PlatformDB")
-    insertRecords("PlatformDB")
+    createDB("PlatformDB.db")
+    insertRecords("PlatformDB.db")

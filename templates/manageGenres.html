@@ -6,7 +6,7 @@
     <title>Manage Genres</title>
 </head>
 <body>
-{% if username not in session %}
+{% if 'username' not in session %}
 <!-- If user is not logged in, deny access -->
 <p>Access denied!<br>Please log in!</p>
 {% else %}
@@ -22,12 +22,19 @@
             {% for genre in genres %}
             <tr>
                 <td>{{ genre }}</td>
+                <td>
+                    <!-- Delete button (not requested in the manual) -->
+                    <form method="POST" action="{{ url_for('deleteGenre') }}">
+                        <input type="hidden" name="genre" value="{{ genre }}">
+                        <input type="submit" value="Delete">
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     <h2>Add Genre</h2>
-    <form method="POST">
+    <form method="POST" action="{{ url_for('addGenre') }}">
         <label for="genre">Genre Name:</label>
         <input type="text" id="genre" name="genre" placeholder="Enter Genre Name" required />
         <input type="submit" value="Add Genre">

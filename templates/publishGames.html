@@ -8,6 +8,23 @@
 </head>
 
 <body>
+{% if isAdmin %}
+        <p>
+            <a href="/homepage">Home Page</a> |
+            <a href="/manageGenres">Manage Genres</a> |
+            <a href="/myProfile">My Profile</a> |
+            <a href="/logout">Logout</a>
+        </p>
+    {% else %}
+        <p>
+            <a href="/homepage">Home Page</a> |
+            <a href="/publishGames">Published Games</a> |
+            <a href="/myProfile">My Profile</a> |
+            <a href="/logout">Logout</a>
+        </p>
+    {% endif %}
+
+<h1>Publish Game</h1>
 <form method="POST" action="/createGame">
     <p>Title: <input type="text" name="title" required></p>
     <p>Price: <input type="text" name="price" required></p>
@@ -19,26 +36,28 @@
 	<p>Full Release <input type="radio" name="release" value="Yes" />Yes <input type="radio" name="release" value="No" /> No</p>
     <input type="submit" value="Add Game">
 </form>
-<!--<table>-->
-<!--    <tr>-->
-<!--        <th>Title</th>-->
-<!--        <th>Price</th>-->
-<!--        <th>Genres</th>-->
-<!--        <th>Delete</th>-->
-<!--    </tr>-->
-<!--    {% for game in publishedGames %}-->
-<!--    <tr>-->
-<!--        <td>{{game[1]}}</td>-->
-<!--        <td>{{game[2]}}</td>-->
-<!--        <td>{{game[3]}}</td>-->
-<!--        <td>-->
-<!--        <form method="GET" action="/deleteGame">-->
-<!--            <input type="hidden" name="gameID" value="{{game[0]}}">-->
-<!--        </form>-->
-<!--        </td>-->
-<!--    </tr>-->
-<!--    {% endfor %}-->
-<!--</table>-->
+<h2>Available Games</h2>
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Price</th>
+        <th>Genres</th>
+        <th>Delete</th>
+    </tr>
+    {% for game in publishedGames %}
+    <tr>
+        <td>{{game[1]}}</td>
+        <td>{{game[2]}}</td>
+        <td>{{game[3]}}</td>
+        <td>
+        <form method="GET" action="/deleteGame">
+            <input type="hidden" name="gameID" value="{{ game[0] }}">
+            <input type="submit" value="Delete">
+        </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
 {% if msg %}
 <p>{{msg}}</p>
 {% endif %}

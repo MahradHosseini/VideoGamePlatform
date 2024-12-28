@@ -1,3 +1,4 @@
+import traceback
 from flask import *
 import sqlite3
 import re
@@ -13,6 +14,7 @@ def showRegistration():
 
 @app.route("/applyregistration", methods=["POST"])
 def applyregistration():
+    msg = "Error"
     try:
         username = request.form["username"]
         password = request.form["pwd"]
@@ -20,14 +22,38 @@ def applyregistration():
         emailaddress = request.form["emailaddress"]
 
         isadmin = bool(re.search(r"\w+@game\.metu\.edu\.tr", emailaddress))
-        # check password
+        if not re.match(r"\w+@\w+\.\w+",emailaddress):
+            msg = "Please enter a correct email"
+            raise Exception
+
+        # Check password
+        if len(password)<10:
+            msg="Password length must be at least 10 digits"
+            raise Exception
+
+        count_uppercase = 0
+        count_lowercase = 0
+        count_digit = 0
+
+        for char in password:
+            if char.isdigit():
+                count_digit+=1
+            if char.islower():
+                count_lowercase+=1
+            if char.isupper():
+                count_uppercase+=1
+
+        if count_digit<1 or count_lowercase<1 or count_uppercase<1:
+            msg = "Password must contain at least 1 uppercase, 1 lowercase, 1 digit."
+            raise Exception
 
         conn = sqlite3.connect("PlatformDB.db")
         c = conn.cursor()
         c.execute("SELECT * FROM User WHERE username=?", (username,))
         row = c.fetchone()
         if row is not None:
-            return render_template("registration.html", msg="User already exist!")
+            msg = "User already exist!"
+            return render_template("registration.html", msg=msg)
 
         c.execute("INSERT INTO User VALUES(?,?,?,?,?)", (username, password, fullname, emailaddress, isadmin))
         conn.commit()
@@ -35,7 +61,7 @@ def applyregistration():
         return render_template("registrationConfirmation.html")
         # Hint: Check |safe for the template to be able to consider HTML tags
     except:
-        return render_template("registration.html", msg="Error")
+        return render_template("registration.html", msg=msg)
 
 
 @app.route("/")
@@ -86,7 +112,7 @@ def logout():
     return redirect(url_for("homePage"))
 
 
-@app.route("/publishGames")
+@app.route("/publishGames",methods=["GET","POST"])
 def publishedGames():
     try:
         # Establish connection with the database
@@ -100,11 +126,34 @@ def publishedGames():
         # Storing genres in session
         session["genres"] = [row[1] for row in rows]
 
+
+        # Fetching Table information
+        c.execute("SELECT * FROM Game WHERE PublishedBy = ?", (session["username"],))
+        games = c.fetchall()
+
+        gameInfo = []
+        for game in games:
+            genreNames = []
+            c.execute("SELECT genreID FROM GameGenre WHERE gameID = ?",(game[0],))
+            genreids = c.fetchall()
+            for genreid in genreids:
+                c.execute("SELECT name FROM Genre WHERE genreID= ? ",genreid)
+                gname = c.fetchone()
+                if gname:
+                    genreNames.append(gname[0])
+
+            genreNames= ",".join(genreNames)
+            print(gameInfo)
+            gameInfo.append((game[0],game[1],game[3],genreNames))
+
+        print(gameInfo)
+        session["publishedGames"] = gameInfo
         conn.close()
-        return render_template("publishGames.html", genres=session["genres"])
+        return render_template("publishGames.html", genres=session["genres"], publishedGames=session["publishedGames"])
 
     except Exception as e:
-        return render_template("publishGames.html", msg="Error", genres=session["genres"])
+        traceback.print_exc(e)
+        return render_template("publishGames.html", msg="Error", genres=session["genres"], publishedGames=session["publishedGames"])
 
 
 @app.post("/createGame")
@@ -120,8 +169,6 @@ def createGame():
         selectedGenres = request.form.getlist("genres[]")
         description = request.form["description"]
         fullRelease = request.form["release"]
-
-        genresString = ','.join(selectedGenres)
 
         # Adding the game to Game table
         c.execute(
@@ -152,6 +199,25 @@ def createGame():
         msg = "An Error Occurred!"
         return render_template("publishGames.html", genres=session["genres"], msg=msg)
 
+
+    return render_template("publishGames.html",games = session["games"])
+
+@app.route("/deleteGame",methods=["GET"])
+def deleteGame():
+    # request the game id from the form
+    gameID = request.args.get("gameID")
+
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+
+    # Delete game from Game table
+    c.execute("DELETE FROM Game WHERE gameID = ?",gameID)
+    # Delete game from GameGenre table
+    c.execute("DELETE FROM GameGenre WHERE gameID = ?",gameID)
+
+    conn.commit()
+    conn.commit()
+    return redirect(url_for("publishedGames"))
 
 @app.route("/manageGenres", methods=["GET", "POST"])
 def manageGenres():

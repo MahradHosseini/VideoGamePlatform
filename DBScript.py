@@ -39,7 +39,8 @@ def createDB(dbName):
         gameID INTEGER NOT NULL,
         genreID INTEGER NOT NULL,
         FOREIGN KEY (gameID) REFERENCES Game(gameID),
-        FOREIGN KEY (genreID) REFERENCES Genre(genreID)
+        FOREIGN KEY (genreID) REFERENCES Genre(genreID),
+        PRIMARY KEY (gameID,genreID)
     )""")
 
     conn.commit()

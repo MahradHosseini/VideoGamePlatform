@@ -28,12 +28,14 @@
         <!-- Regular user menu -->
         <p>
             <a href="/homepage">Home Page</a> |
-            <a href="/publishedgames">Published Games</a> |
+            <a href="/publishGames">Published Games</a> |
             <a href="/myprofile">My Profile</a> |
             <a href="/logout">Logout</a>
         </p>
     {% endif %}
 {% endif %}
-
+{% if msg %}
+<p>{{msg}}</p>
+{% endif %}
 </body>
 </html>

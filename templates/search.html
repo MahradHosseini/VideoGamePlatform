@@ -39,7 +39,30 @@
 </table>
 {% endfor %}
 {% else %}
-
+{% if game not in genre.games %}
+<p>No games found</p>
+{% else %}
+<table border="1">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Genre</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for game in genre.games %}
+    <tr>
+        <td>{{game.title}}</td>
+        <td>{{game.description}}</td>
+        <td>{{game.genre}}</td>
+        <td><a>See More</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endfor %}
 {% endif %}
 </body>
 </html>

@@ -69,7 +69,7 @@
                     <td>{{ game[0] }}</td> <!-- Title -->
                     <td>{{ game[1] }}</td> <!-- Description -->
                     <td>{{ game[3] }}</td> <!-- Genre -->
-                    <td><a href="{{ url_for('viewGameDetails', game_id=game[0]) }}">See More</a></td>
+                    <td><a href="{{ url_for('seeSelectedGame', gameID=game[4]) }}">See More</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -95,7 +95,7 @@
                     <td>{{ game[0] }}</td> <!-- Title -->
                     <td>{{ game[1] }}</td> <!-- Description -->
                     <td>{{ game[3] }}</td> <!-- Genre -->
-                    <td><a href="{{ url_for('viewGameDetails', game_id=game[0]) }}">See More</a></td>
+                    <td><a href="{{ url_for('seeSelectedGame', gameID=game[4]) }}">See More</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

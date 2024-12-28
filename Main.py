@@ -43,14 +43,24 @@ def applyregistration():
 def homePage():
     print(session)
 
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+
+    c.execute("SELECT name FROM Genre")
+
+    genres = [row[0] for row in c.execute("SELECT name FROM Genre").fetchall()]
+
+    conn.close()
     if "username" in session:
         is_admin = session.get("isAdmin", False)
         return render_template(
             "homepage.html",
             username=session["username"],
-            isAdmin=is_admin)
+            isAdmin=is_admin,
+            genres=genres)
     else:
-        return render_template("homepage.html")
+        return render_template("homepage.html",
+                               genres=genres)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -239,7 +249,7 @@ def querySearch():
         selectedGenre = request.form.get("genre", "All Genres")
 
         query = """
-        SELECT g.title, g.description, g.isFullReleased, group_concat(ge.name) AS genres
+        SELECT g.title, g.description, g.isFullReleased, group_concat(ge.name) AS genres, g.gameID
         FROM Game g
         JOIN GameGenre gg ON g.gameID = gg.gameID
         JOIN Genre ge ON gg.genreID = ge.genreID
@@ -286,10 +296,31 @@ def querySearch():
             categorizedResults=categorizedResults if selectedGenre == "All Genres" else None,
             selectedGenre=selectedGenre)
 
-@app.route("/viewGameDetails", methods=["GET"])
-def viewGameDetails():
-    pass
+@app.route("/seeSelectedGame/<int:gameID>")
+def seeSelectedGame(gameID):
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+    c.execute("""
+        SELECT 
+            g.title,
+            g.description,
+            group_concat(ge.name) AS genres,
+            g.isFullReleased,
+            g.price
+        FROM Game g
+        JOIN GameGenre gg ON g.gameID = gg.gameID
+        JOIN Genre ge ON gg.genreID = ge.genreID
+        WHERE g.gameID = ?
+    """, (gameID,))
 
+    game = c.fetchone()
+    conn.close()
+
+    if game:
+        return render_template("seeSelectedGame.html",
+                               game=game)
+    else:
+        return "Game not found", 404
 
 if __name__ == "__main__":
     app.run(debug=True)

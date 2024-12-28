@@ -59,7 +59,7 @@ def applyregistration():
         conn.commit()
         conn.close()
         return render_template("registrationConfirmation.html")
-        # Hint: Check |safe for the template to be able to consider HTML tags
+
     except:
         return render_template("registration.html", msg=msg)
 
@@ -67,7 +67,6 @@ def applyregistration():
 @app.route("/")
 @app.route("/homepage")
 def homePage():
-    print(session)
 
     conn = sqlite3.connect("PlatformDB.db")
     c = conn.cursor()
@@ -85,8 +84,7 @@ def homePage():
             isAdmin=is_admin,
             genres=genres)
     else:
-        return render_template("homepage.html",
-                               genres=genres)
+        return render_template("homepage.html",genres=genres)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -143,16 +141,14 @@ def publishedGames():
                     genreNames.append(gname[0])
 
             genreNames= ",".join(genreNames)
-            print(gameInfo)
+
             gameInfo.append((game[0],game[1],game[3],genreNames))
 
-        print(gameInfo)
         session["publishedGames"] = gameInfo
         conn.close()
         return render_template("publishGames.html", genres=session["genres"], publishedGames=session["publishedGames"])
 
     except Exception as e:
-        traceback.print_exc(e)
         return render_template("publishGames.html", msg="Error", genres=session["genres"], publishedGames=session["publishedGames"])
 
 
@@ -192,15 +188,10 @@ def createGame():
         conn.commit()
         conn.close()
 
-        msg = "Game was added successfully!"
-        return render_template("publishGames.html", msg=msg, genres=session["genres"])
-
+        return redirect(url_for("publishedGames"))
     except Exception as e:
         msg = "An Error Occurred!"
         return render_template("publishGames.html", genres=session["genres"], msg=msg)
-
-
-    return render_template("publishGames.html",games = session["games"])
 
 @app.route("/deleteGame",methods=["GET"])
 def deleteGame():

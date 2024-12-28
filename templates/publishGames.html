@@ -8,21 +8,16 @@
 </head>
 
 <body>
-{% if isAdmin %}
-        <p>
-            <a href="/homepage">Home Page</a> |
-            <a href="/manageGenres">Manage Genres</a> |
-            <a href="/myProfile">My Profile</a> |
-            <a href="/logout">Logout</a>
-        </p>
+<p>
+    <a href="/homepage">Home Page</a> |
+    {% if isAdmin %}
+    <a href="/manageGenres">Manage Genres</a>
     {% else %}
-        <p>
-            <a href="/homepage">Home Page</a> |
-            <a href="/publishGames">Published Games</a> |
-            <a href="/myProfile">My Profile</a> |
-            <a href="/logout">Logout</a>
-        </p>
-    {% endif %}
+    <a href="/publishGames">Published Games</a>
+    {% endif %} |
+    <a href="/myProfile">My Profile</a> |
+    <a href="/logout">Logout</a>
+</p>
 
 <h1>Publish Game</h1>
 <form method="POST" action="/createGame">
@@ -33,7 +28,8 @@
     <input type="checkbox" name="genres[]" value="{{ genre }}">{{ genre }}
     {% endfor %}
     <p>Description: <input type="text" name="description"></p>
-	<p>Full Release <input type="radio" name="release" value="Yes" />Yes <input type="radio" name="release" value="No" /> No</p>
+    <p>Full Release <input type="radio" name="release" value="Yes"/>Yes <input type="radio" name="release" value="No"/>
+        No</p>
     <input type="submit" value="Add Game">
 </form>
 <h2>Available Games</h2>
@@ -50,10 +46,10 @@
         <td>{{game[2]}}</td>
         <td>{{game[3]}}</td>
         <td>
-        <form method="GET" action="/deleteGame">
-            <input type="hidden" name="gameID" value="{{ game[0] }}">
-            <input type="submit" value="Delete">
-        </form>
+            <form method="GET" action="/deleteGame">
+                <input type="hidden" name="gameID" value="{{ game[0] }}">
+                <input type="submit" value="Delete">
+            </form>
         </td>
     </tr>
     {% endfor %}

@@ -9,12 +9,12 @@
 
 <body>
 <form method="POST" action="/applyregistration">
-    <p>Username: <input type="text" name="username" required /></p>
+    <p>Username: <input type="text" name="username" required/></p>
     <p>Password: <input type="password" name="pwd" required/></p>
-    <p>Full name: <input type="text" name = "fullname" required/></p>
-    <p>Email Address: <input type="text" name = "emailaddress" required/></p>
+    <p>Full name: <input type="text" name="fullname" required/></p>
+    <p>Email Address: <input type="text" name="emailaddress" required/></p>
 
-    <p><input type="submit" value="Register" /></p>
+    <p><input type="submit" value="Register"/></p>
 </form>
 {% if msg %}
 <p> {{ msg }} </p>

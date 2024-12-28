@@ -8,44 +8,57 @@
 </head>
 
 <body>
+<!-- If user is logged in -->
+<p>
+    <a href="/homepage">Home Page</a> |
+    {% if isAdmin %}
+    <a href="/manageGenres">Manage Genres</a>
+    {% else %}
+    <a href="/publishGames">Published Games</a>
+    {% endif %} |
+    <a href="/myProfile">My Profile</a> |
+    <a href="/logout">Logout</a>
+</p>
+
 {% if 'username' not in session %}
 <!-- If user is not logged in, deny access -->
 <p>Access denied!<br>Please log in!</p>
 {% else %}
-    {% if isAdmin %}
-    <h1>Manage Genres</h1>
-    <table border = "1">
-        <thead>
-            <tr>
-                <th>Genre Name</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for genre in genres %}
-            <tr>
-                <td>{{ genre }}</td>
-                <td>
-                    <!-- Delete button (not requested in the manual) -->
-                    <form method="POST" action="{{ url_for('deleteGenre') }}" style = "background-color: transparent; box-shadow: none">
-                        <input type="hidden" name="genre" value="{{ genre }}">
-                        <input type="submit" value="Delete">
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <h2>Add Genre</h2>
-    <form method="POST" action="{{ url_for('addGenre') }}">
-        <label for="genre">Genre Name:</label>
-        <input type="text" id="genre" name="genre" placeholder="Enter Genre Name" required />
-        <input type="submit" value="Add Genre">
-    </form>
-    {% else %}
-    <!-- Regular user -->
-    <p>Only admins are authorized to see this page!</p>
-    {% endif %}
+{% if isAdmin %}
+<h1>Manage Genres</h1>
+<table border="1">
+    <thead>
+    <tr>
+        <th>Genre Name</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for genre in genres %}
+    <tr>
+        <td>{{ genre }}</td>
+        <td>
+            <!-- Delete button (not requested in the manual) -->
+            <form method="POST" action="{{ url_for('deleteGenre') }}"
+                  style="background-color: transparent; box-shadow: none">
+                <input type="hidden" name="genre" value="{{ genre }}">
+                <input type="submit" value="Delete">
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<h2>Add Genre</h2>
+<form method="POST" action="{{ url_for('addGenre') }}">
+    <label for="genre">Genre Name:</label>
+    <input type="text" id="genre" name="genre" placeholder="Enter Genre Name" required/>
+    <input type="submit" value="Add Genre">
+</form>
+{% else %}
+<!-- Regular user -->
+<p>Only admins are authorized to see this page!</p>
+{% endif %}
 {% endif %}
 
 <p><a href="{{ url_for('homePage') }}">Go back to Home Page</a></p>

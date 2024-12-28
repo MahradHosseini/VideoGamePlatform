@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Page</title>
 </head>
 <body>
@@ -9,15 +10,14 @@
     <!-- If user is not logged in, show login form -->
     <form method="POST" action="/login">
         <h1>Login</h1>
-        <p>User name: <input type="text" name="username"/></p>
-        <p>Password: <input type="password" name="pwd"/></p>  <!-- Change to password input for security -->
-        <input type="submit"/>
+        <p>User name: <input type="text" name="username" required /></p>
+        <p>Password: <input type="password" name="pwd" required /></p>
+        <input type="submit" value="Login" />
     </form>
     <p>Don't have an account? <a href="/registration">Register</a></p>
 {% else %}
     <!-- If user is logged in -->
     {% if isAdmin %}
-        <!-- Admin menu -->
         <p>
             <a href="/homepage">Home Page</a> |
             <a href="/manageGenres">Manage Genres</a> |
@@ -25,7 +25,6 @@
             <a href="/logout">Logout</a>
         </p>
     {% else %}
-        <!-- Regular user menu -->
         <p>
             <a href="/homepage">Home Page</a> |
             <a href="/publishGames">Published Games</a> |
@@ -34,8 +33,79 @@
         </p>
     {% endif %}
 {% endif %}
-{% if msg %}
-<p>{{msg}}</p>
+
+<!-- Search functionality -->
+<h1>Search for Published Games</h1>
+<form method="POST" action="{{ url_for('querySearch') }}">
+    <label for="keyword">Keyword:</label>
+    <input type="text" name="keyword" id="keyword" placeholder="Enter keyword" />
+    <label for="genre">Genre:</label>
+    <select name="genre" id="genre">
+        <option value="All Genres">All Genres</option>
+        {% for genre in genres %}
+        <option value="{{ genre }}">{{ genre }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Search</button>
+</form>
+
+{% if results %}
+    {% if selectedGenre == 'All Genres' %}
+        {% for genre, games in categorizedResults.items() %}
+        <h2>{{ genre }}</h2>
+        {% if games %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Genre</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for game in games %}
+                <tr>
+                    <td>{{ game[0] }}</td> <!-- Title -->
+                    <td>{{ game[1] }}</td> <!-- Description -->
+                    <td>{{ game[3] }}</td> <!-- Genre -->
+                    <td><a href="{{ url_for('viewGameDetails', game_id=game[0]) }}">See More</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No games found in this genre.</p>
+        {% endif %}
+        {% endfor %}
+    {% else %}
+        {% if results %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Genre</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for game in results %}
+                <tr>
+                    <td>{{ game[0] }}</td> <!-- Title -->
+                    <td>{{ game[1] }}</td> <!-- Description -->
+                    <td>{{ game[3] }}</td> <!-- Genre -->
+                    <td><a href="{{ url_for('viewGameDetails', game_id=game[0]) }}">See More</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No games found.</p>
+        {% endif %}
+    {% endif %}
+{% else %}
+    <p>No games found.</p>
 {% endif %}
 </body>
 </html>

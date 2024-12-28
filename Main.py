@@ -1,5 +1,3 @@
-import traceback
-
 from flask import *
 import sqlite3
 import re
@@ -7,9 +5,11 @@ import re
 app = Flask(__name__)
 app.secret_key = "123"
 
+
 @app.route("/registration")
 def showRegistration():
     return render_template("registration.html")
+
 
 @app.route("/applyregistration", methods=["POST"])
 def applyregistration():
@@ -22,7 +22,7 @@ def applyregistration():
         isadmin = bool(re.search(r"\w+@game\.metu\.edu\.tr", emailaddress))
         # check password
 
-        conn = sqlite3.connect("PlatformDB")
+        conn = sqlite3.connect("PlatformDB.db")
         c = conn.cursor()
         c.execute("SELECT * FROM User WHERE username=?", (username,))
         row = c.fetchone()
@@ -37,13 +37,18 @@ def applyregistration():
     except:
         return render_template("registration.html", msg="Error")
 
+
 @app.route("/")
 @app.route("/homepage")
 def homePage():
     print(session)
+
     if "username" in session:
         is_admin = session.get("isAdmin", False)
-        return render_template("homepage.html", username=session["username"], isAdmin=is_admin)
+        return render_template(
+            "homepage.html",
+            username=session["username"],
+            isAdmin=is_admin)
     else:
         return render_template("homepage.html")
 
@@ -53,7 +58,7 @@ def login():
     username = request.form["username"]
     pwd = request.form["pwd"]
 
-    conn = sqlite3.connect("PlatformDB")
+    conn = sqlite3.connect("PlatformDB.db")
     c = conn.cursor()
     c.execute("SELECT * FROM User WHERE username=? AND password=?", (username, pwd))
     row = c.fetchone()
@@ -75,7 +80,7 @@ def logout():
 def publishedGames():
     try:
         # Establish connection with the database
-        conn = sqlite3.connect("PlatformDB")
+        conn = sqlite3.connect("PlatformDB.db")
         c = conn.cursor()
 
         # Fetching all the genres to display then in checkboxs
@@ -86,17 +91,17 @@ def publishedGames():
         session["genres"] = [row[1] for row in rows]
 
         conn.close()
-        return render_template("publishGames.html", genres = session["genres"])
+        return render_template("publishGames.html", genres=session["genres"])
 
     except Exception as e:
-        return render_template("publishGames.html", msg = "Error", genres = session["genres"])
+        return render_template("publishGames.html", msg="Error", genres=session["genres"])
 
 
 @app.post("/createGame")
 def createGame():
     try:
         # Establish Connection with the database
-        conn = sqlite3.connect("PlatformDB")
+        conn = sqlite3.connect("PlatformDB.db")
         c = conn.cursor()
 
         # Taking the input from Form
@@ -109,8 +114,9 @@ def createGame():
         genresString = ','.join(selectedGenres)
 
         # Adding the game to Game table
-        c.execute("INSERT INTO Game(title, price, description, isFullReleased, publishedBy) VALUES(?,?,?,?,?) RETURNING gameID, title"
-                  , (title, price, description, fullRelease, session["username"]))
+        c.execute(
+            "INSERT INTO Game(title, price, description, isFullReleased, publishedBy) VALUES(?,?,?,?,?) RETURNING gameID, title"
+            , (title, price, description, fullRelease, session["username"]))
 
         # Retrieving the last entered game to get its ID
         game = c.fetchone()
@@ -124,19 +130,20 @@ def createGame():
         # Making the relationship between genre and game
         for genre in genreRows:
             if genre[1] in selectedGenres:
-                c.execute("INSERT INTO gameGenre(gameID,genreID) VALUES (?,?)", (gameID,genre[0]))
+                c.execute("INSERT INTO gameGenre(gameID,genreID) VALUES (?,?)", (gameID, genre[0]))
 
         conn.commit()
         conn.close()
 
         msg = "Game was added successfully!"
-        return render_template("publishGames.html",msg = msg, genres = session["genres"])
+        return render_template("publishGames.html", msg=msg, genres=session["genres"])
 
     except Exception as e:
         msg = "An Error Occurred!"
-        return render_template("publishGames.html", genres = session["genres"], msg=msg)
+        return render_template("publishGames.html", genres=session["genres"], msg=msg)
 
-@app.route("/manageGenres", methods = ["GET", "POST"])
+
+@app.route("/manageGenres", methods=["GET", "POST"])
 def manageGenres():
     username = session.get("username", None)
     isAdmin = session.get("isAdmin", False)
@@ -149,6 +156,7 @@ def manageGenres():
 
     conn.close()
     return render_template("manageGenres.html", username=username, genres=genreList, isAdmin=isAdmin)
+
 
 @app.route("/addGenre", methods=["POST"])
 def addGenre():
@@ -165,6 +173,7 @@ def addGenre():
     conn.close()
     return redirect(url_for("manageGenres"))
 
+
 @app.route("/deleteGenre", methods=["POST"])
 def deleteGenre():
     if 'username' not in session or not session.get("isAdmin", False):
@@ -178,6 +187,7 @@ def deleteGenre():
     conn.close()
 
     return redirect(url_for("manageGenres"))
+
 
 @app.route("/myProfile", methods=["GET", "POST"])
 def myProfile():
@@ -193,6 +203,7 @@ def myProfile():
 
     conn.close()
     return render_template("myProfile.html", username=username, name=name, email=email)
+
 
 @app.route("/changePassword", methods=["POST"])
 def changePassword():
@@ -211,13 +222,74 @@ def changePassword():
         print(e)
         return redirect(url_for("myProfile" + "?status=failure"))
 
-@app.route("/search", methods=["GET", "POST"])
-def search():
-    pass
 
 @app.route("/querySearch", methods=["POST"])
 def querySearch():
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+
+    c.execute("SELECT name FROM Genre")
+    genres = [row[0] for row in c.fetchall()]
+
+    results = None
+    selectedGenre = "All Genres"
+
+    if request.method == "POST":
+        keyword = request.form.get("keyword", "").strip()
+        selectedGenre = request.form.get("genre", "All Genres")
+
+        query = """
+        SELECT g.title, g.description, g.isFullReleased, group_concat(ge.name) AS genres
+        FROM Game g
+        JOIN GameGenre gg ON g.gameID = gg.gameID
+        JOIN Genre ge ON gg.genreID = ge.genreID
+        WHERE (g.title LIKE ? OR g.description LIKE ?)"""
+
+        params = [f"%{keyword}%", f"%{keyword}%"]
+
+        if selectedGenre != "All Genres":
+            query += " AND ge.name = ?"
+            params.append(selectedGenre)
+
+        query += "GROUP BY g.gameID"
+
+        c.execute(query, params)
+        games = c.fetchall()
+
+        if selectedGenre == "All Genres":
+            categorizedResults = {}
+            for genre in genres:
+                categorizedResults[genre] = [
+                    game for game in games if genre in game[3].split(",")
+                ]
+            results = categorizedResults
+        else:
+            results = games
+
+    conn.close()
+
+    if "username" in session:
+        is_admin = session.get("isAdmin", False)
+        return render_template(
+            "homepage.html",
+            username=session["username"],
+            isAdmin=is_admin,
+            genres=genres,
+            results=results,
+            categorizedResults=categorizedResults if selectedGenre == "All Genres" else None,
+            selectedGenre=selectedGenre)
+    else:
+        return render_template(
+            "homepage.html",
+            genres=genres,
+            results=results,
+            categorizedResults=categorizedResults if selectedGenre == "All Genres" else None,
+            selectedGenre=selectedGenre)
+
+@app.route("/viewGameDetails", methods=["GET"])
+def viewGameDetails():
     pass
+
 
 if __name__ == "__main__":
     app.run(debug=True)

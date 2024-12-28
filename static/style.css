@@ -180,25 +180,3 @@ table tr {
     border-color: #f5c6cb;
 }
 
-/* ------------------------------ */
-/* Responsive Design             */
-/* ------------------------------ */
-@media (max-width: 600px) {
-    body {
-        background-attachment: scroll;
-    }
-
-    form {
-        max-width: 90%;
-        padding: 1rem;
-    }
-
-    table, th, td {
-        display: block;
-        width: 100%;
-    }
-
-    table tr {
-        margin-bottom: 1rem;
-    }
-}

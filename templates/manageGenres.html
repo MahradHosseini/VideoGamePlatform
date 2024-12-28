@@ -18,6 +18,7 @@
         <thead>
             <tr>
                 <th>Genre Name</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -26,7 +27,7 @@
                 <td>{{ genre }}</td>
                 <td>
                     <!-- Delete button (not requested in the manual) -->
-                    <form method="POST" action="{{ url_for('deleteGenre') }}">
+                    <form method="POST" action="{{ url_for('deleteGenre') }}" style = "background-color: transparent; box-shadow: none">
                         <input type="hidden" name="genre" value="{{ genre }}">
                         <input type="submit" value="Delete">
                     </form>
@@ -47,5 +48,6 @@
     {% endif %}
 {% endif %}
 
+<p><a href="{{ url_for('homePage') }}">Go back to Home Page</a></p>
 </body>
 </html>

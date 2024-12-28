@@ -11,60 +11,45 @@
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const status = urlParams.get('status');
-            if (status == "success") {
+            if (status == "success"){
                 alert("Password Changed Successfully");
-            } else if (status == "failure") {
+            } else if (status == "failure"){
                 alert("Failed to Change the Password");
             }
         });
     </script>
 </head>
 <body>
-{% if isAdmin %}
-<p>
-    <a href="/homepage">Home Page</a> |
-    <a href="/manageGenres">Manage Genres</a> |
-    <a href="/myProfile">My Profile</a> |
-    <a href="/logout">Logout</a>
-</p>
-{% else %}
-<p>
-    <a href="/homepage">Home Page</a> |
-    <a href="/publishGames">Published Games</a> |
-    <a href="/myProfile">My Profile</a> |
-    <a href="/logout">Logout</a>
-</p>
-{% endif %}
 <h1>My Profile</h1>
 <form method="POST" action="{{ url_for('changePassword') }}">
-    <table border="1">
-        <thead>
-        <tr>
-            <th>User Info</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>Username</td>
-            <td>{{username}}</td>
-        </tr>
-        <tr>
-            <td>Password</td>
-            <td>
-                <input type="password" id="password" name="password">
-            </td>
-        </tr>
-        <tr>
-            <td>Name</td>
-            <td>{{name}}</td>
-        </tr>
-        <tr>
-            <td>Email</td>
-            <td>{{email}}</td>
-        </tr>
-        </tbody>
-    </table>
-    <input type="submit" value="Change Password">
+<table border="1">
+    <thead>
+    <tr>
+        <th>User Info</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Username</td>
+        <td>{{username}}</td>
+    </tr>
+    <tr>
+        <td>Password</td>
+        <td>
+            <input type="password" id="password" name="password">
+        </td>
+    </tr>
+    <tr>
+        <td>Name</td>
+        <td>{{name}}</td>
+    </tr>
+    <tr>
+        <td>Email</td>
+        <td>{{email}}</td>
+    </tr>
+    </tbody>
+</table>
+<input type="submit" value="Change Password">
 </form>
 </body>
 </html>

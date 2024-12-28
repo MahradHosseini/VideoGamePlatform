@@ -7,11 +7,9 @@ import re
 app = Flask(__name__)
 app.secret_key = "123"
 
-
 @app.route("/registration")
 def showRegistration():
     return render_template("registration.html")
-
 
 @app.route("/applyregistration", methods=["POST"])
 def applyregistration():
@@ -20,6 +18,7 @@ def applyregistration():
         password = request.form["pwd"]
         fullname = request.form["fullname"]
         emailaddress = request.form["emailaddress"]
+
         isadmin = bool(re.search(r"\w+@game\.metu\.edu\.tr", emailaddress))
         # check password
 
@@ -27,7 +26,7 @@ def applyregistration():
         c = conn.cursor()
         c.execute("SELECT * FROM User WHERE username=?", (username,))
         row = c.fetchone()
-        if row != None:
+        if row is not None:
             return render_template("registration.html", msg="User already exist!")
 
         c.execute("INSERT INTO User VALUES(?,?,?,?,?)", (username, password, fullname, emailaddress, isadmin))
@@ -37,7 +36,6 @@ def applyregistration():
         # Hint: Check |safe for the template to be able to consider HTML tags
     except:
         return render_template("registration.html", msg="Error")
-
 
 @app.route("/")
 @app.route("/homepage")
@@ -138,6 +136,88 @@ def createGame():
         msg = "An Error Occurred!"
         return render_template("publishGames.html", genres = session["genres"], msg=msg)
 
+@app.route("/manageGenres", methods = ["GET", "POST"])
+def manageGenres():
+    username = session.get("username", None)
+    isAdmin = session.get("isAdmin", False)
+
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+
+    genres = c.execute("SELECT name FROM Genre").fetchall()
+    genreList = [row[0] for row in genres]
+
+    conn.close()
+    return render_template("manageGenres.html", username=username, genres=genreList, isAdmin=isAdmin)
+
+@app.route("/addGenre", methods=["POST"])
+def addGenre():
+    if 'username' not in session or not session.get("isAdmin", False):
+        return "Access denied", 403
+
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+
+    genreName = request.form["genre"]
+    c.execute("INSERT INTO Genre(name) VALUES(?)", (genreName,))
+
+    conn.commit()
+    conn.close()
+    return redirect(url_for("manageGenres"))
+
+@app.route("/deleteGenre", methods=["POST"])
+def deleteGenre():
+    if 'username' not in session or not session.get("isAdmin", False):
+        return "Access denied", 403
+
+    genreToDelete = request.form["genre"]
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+    c.execute("DELETE FROM Genre Where name = ?", (genreToDelete,))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("manageGenres"))
+
+@app.route("/myProfile", methods=["GET", "POST"])
+def myProfile():
+    username = session.get("username", None)
+
+    conn = sqlite3.connect("PlatformDB.db")
+    c = conn.cursor()
+    c.execute("SELECT name, email FROM User WHERE username = ?", (username,))
+
+    row = c.fetchone()
+    name = row[0]
+    email = row[1]
+
+    conn.close()
+    return render_template("myProfile.html", username=username, name=name, email=email)
+
+@app.route("/changePassword", methods=["POST"])
+def changePassword():
+    try:
+        newPassword = request.form["password"]
+        username = session.get("username", None)
+
+        conn = sqlite3.connect("PlatformDB.db")
+        c = conn.cursor()
+        c.execute("UPDATE User SET password = ? WHERE username = ?", (newPassword, username))
+
+        conn.commit()
+        conn.close()
+        return redirect(url_for("myProfile") + "?status=success")
+    except Exception as e:
+        print(e)
+        return redirect(url_for("myProfile" + "?status=failure"))
+
+@app.route("/search", methods=["GET", "POST"])
+def search():
+    pass
+
+@app.route("/querySearch", methods=["POST"])
+def querySearch():
+    pass
 
 if __name__ == "__main__":
     app.run(debug=True)

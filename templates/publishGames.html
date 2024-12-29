@@ -24,10 +24,12 @@
     <input type="checkbox" name="genres[]" value="{{ genre }}">{{ genre }}
     {% endfor %}
     <p>Description: <input type="text" name="description"></p>
-    <p>Full Release <input type="radio" name="release" value="Yes"/>Yes <input type="radio" name="release" value="No"/>
-        No</p>
+    <p>Full Release <input type="radio" name="release" value="true"/>Yes <input type="radio" name="release" value="false" checked/>No</p>
     <input type="submit" value="Add Game">
 </form>
+{% if msg %}
+<p style="color: red">{{msg}}</p>
+{% endif %}
 <h2>Available Games</h2>
 <table>
     <tr>
@@ -50,8 +52,6 @@
     </tr>
     {% endfor %}
 </table>
-{% if msg %}
-<p>{{msg}}</p>
-{% endif %}
+
 </body>
 </html>

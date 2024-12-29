@@ -16,6 +16,9 @@
     <p>Password: <input type="password" name="pwd" required/></p>
     <input type="submit" value="Login"/>
 </form>
+{% if msg %}
+<p style="color: red">{{msg}}</p>
+{% endif %}
 <p>Don't have an account? <a href="/registration">Register</a></p>
 {% else %}
 <!-- If user is logged in -->

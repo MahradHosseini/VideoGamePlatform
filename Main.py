@@ -23,13 +23,13 @@ def applyregistration():
         fullname = request.form["fullname"]
         emailaddress = request.form["emailaddress"]
 
-        isadmin = bool(re.search(r"\w+@game\.metu\.edu\.tr", emailaddress))
-        if not re.match(r"\w+@\w+\.\w+",emailaddress):
+        isadmin = bool(re.search(r"@game\.metu\.edu\.tr$", emailaddress))
+        if not re.match(r"\w+\s*\w+@\w+\.\w+", emailaddress):
             msg = "Please enter a correct email"
             raise Exception
 
         msg = checkPassword(password)
-        if not msg=="success":
+        if not msg == "success":
             raise Exception
 
         conn = sqlite3.connect("PlatformDB.db")
@@ -47,6 +47,7 @@ def applyregistration():
 
     except:
         return render_template("registration.html", msg=msg)
+
 
 def checkPassword(password):
     count_uppercase = 0
@@ -74,7 +75,6 @@ def checkPassword(password):
 @app.route("/")
 @app.route("/homepage")
 def homePage():
-
     conn = sqlite3.connect("PlatformDB.db")
     c = conn.cursor()
 
@@ -91,7 +91,7 @@ def homePage():
             isAdmin=is_admin,
             genres=genres)
     else:
-        return render_template("homepage.html",genres=genres)
+        return render_template("homepage.html", genres=genres)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -117,7 +117,7 @@ def logout():
     return redirect(url_for("homePage"))
 
 
-@app.route("/publishGames",methods=["GET","POST"])
+@app.route("/publishGames", methods=["GET", "POST"])
 def publishedGames():
     try:
         # Establish connection with the database
@@ -131,7 +131,6 @@ def publishedGames():
         # Storing genres in session
         session["genres"] = [row[1] for row in rows]
 
-
         # Fetching Table information
         c.execute("SELECT * FROM Game WHERE PublishedBy = ?", (session["username"],))
         games = c.fetchall()
@@ -139,24 +138,25 @@ def publishedGames():
         gameInfo = []
         for game in games:
             genreNames = []
-            c.execute("SELECT genreID FROM GameGenre WHERE gameID = ?",(game[0],))
+            c.execute("SELECT genreID FROM GameGenre WHERE gameID = ?", (game[0],))
             genreids = c.fetchall()
             for genreid in genreids:
-                c.execute("SELECT name FROM Genre WHERE genreID= ? ",genreid)
+                c.execute("SELECT name FROM Genre WHERE genreID= ? ", genreid)
                 gname = c.fetchone()
                 if gname:
                     genreNames.append(gname[0])
 
-            genreNames= ",".join(genreNames)
+            genreNames = ",".join(genreNames)
 
-            gameInfo.append((game[0],game[1],game[3],genreNames))
+            gameInfo.append((game[0], game[1], game[3], genreNames))
 
         session["publishedGames"] = gameInfo
         conn.close()
         return render_template("publishGames.html", genres=session["genres"], publishedGames=session["publishedGames"])
 
     except Exception as e:
-        return render_template("publishGames.html", msg="Error", genres=session["genres"], publishedGames=session["publishedGames"])
+        return render_template("publishGames.html", msg="Error",
+                               genres=session.get("genres", []), publishedGames=session.get("publishedGames", []))
 
 
 @app.post("/createGame")
@@ -198,9 +198,10 @@ def createGame():
         return redirect(url_for("publishedGames"))
     except Exception as e:
         msg = "An Error Occurred!"
-        return render_template("publishGames.html", genres=session["genres"], msg=msg)
+        return render_template("publishGames.html", genres=session.get("genres", []), msg=msg)
 
-@app.route("/deleteGame",methods=["GET"])
+
+@app.route("/deleteGame", methods=["GET"])
 def deleteGame():
     # request the game id from the form
     gameID = request.args.get("gameID")
@@ -209,13 +210,14 @@ def deleteGame():
     c = conn.cursor()
 
     # Delete game from Game table
-    c.execute("DELETE FROM Game WHERE gameID = ?",gameID)
+    c.execute("DELETE FROM Game WHERE gameID = ?", gameID)
     # Delete game from GameGenre table
-    c.execute("DELETE FROM GameGenre WHERE gameID = ?",gameID)
+    c.execute("DELETE FROM GameGenre WHERE gameID = ?", gameID)
 
     conn.commit()
     conn.commit()
     return redirect(url_for("publishedGames"))
+
 
 @app.route("/manageGenres", methods=["GET", "POST"])
 def manageGenres():
@@ -360,6 +362,7 @@ def querySearch():
             categorizedResults=categorizedResults if selectedGenre == "All Genres" else None,
             selectedGenre=selectedGenre)
 
+
 @app.route("/seeSelectedGame/<int:gameID>")
 def seeSelectedGame(gameID):
     conn = sqlite3.connect("PlatformDB.db")
@@ -386,6 +389,6 @@ def seeSelectedGame(gameID):
     else:
         return "Game not found", 404
 
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-

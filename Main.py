@@ -1,4 +1,6 @@
 import traceback
+from logging import exception
+
 from flask import *
 import sqlite3
 import re
@@ -26,25 +28,8 @@ def applyregistration():
             msg = "Please enter a correct email"
             raise Exception
 
-        # Check password
-        if len(password)<10:
-            msg="Password length must be at least 10 digits"
-            raise Exception
-
-        count_uppercase = 0
-        count_lowercase = 0
-        count_digit = 0
-
-        for char in password:
-            if char.isdigit():
-                count_digit+=1
-            if char.islower():
-                count_lowercase+=1
-            if char.isupper():
-                count_uppercase+=1
-
-        if count_digit<1 or count_lowercase<1 or count_uppercase<1:
-            msg = "Password must contain at least 1 uppercase, 1 lowercase, 1 digit."
+        msg = checkPassword(password)
+        if not msg=="success":
             raise Exception
 
         conn = sqlite3.connect("PlatformDB.db")
@@ -62,6 +47,28 @@ def applyregistration():
 
     except:
         return render_template("registration.html", msg=msg)
+
+def checkPassword(password):
+    count_uppercase = 0
+    count_lowercase = 0
+    count_digit = 0
+
+    if len(password) < 10:
+        msg = "Password length must be at least 10 digits"
+        return msg
+
+    for char in password:
+        if char.isdigit():
+            count_digit += 1
+        if char.islower():
+            count_lowercase += 1
+        if char.isupper():
+            count_uppercase += 1
+
+    if count_digit < 1 or count_lowercase < 1 or count_uppercase < 1:
+        msg = "Password must contain at least 1 uppercase, 1 lowercase, 1 digit."
+        return msg
+    return "success"
 
 
 @app.route("/")

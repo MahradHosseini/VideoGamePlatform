@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="webApp" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12 (Emotion_Detection_Noise_Cancellation)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="webApp" project-jdk-type="Python SDK" />
 </project>

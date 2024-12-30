@@ -268,6 +268,7 @@ def deleteGenre():
 @app.route("/myProfile", methods=["GET", "POST"])
 def myProfile():
     username = session.get("username", None)
+    isAdmin = session.get("isAdmin", False)
 
     conn = sqlite3.connect("PlatformDB.db")
     c = conn.cursor()
@@ -278,7 +279,7 @@ def myProfile():
     email = row[1]
 
     conn.close()
-    return render_template("myProfile.html", username=username, name=name, email=email)
+    return render_template("myProfile.html", isAdmin=isAdmin, username=username, name=name, email=email)
 
 
 @app.route("/changePassword", methods=["POST"])
@@ -286,6 +287,9 @@ def changePassword():
     try:
         newPassword = request.form["password"]
         username = session.get("username", None)
+
+        if not checkPassword(newPassword) == "success":
+            raise Exception
 
         conn = sqlite3.connect("PlatformDB.db")
         c = conn.cursor()
@@ -295,8 +299,7 @@ def changePassword():
         conn.close()
         return redirect(url_for("myProfile") + "?status=success")
     except Exception as e:
-        print(e)
-        return redirect(url_for("myProfile" + "?status=failure"))
+        return redirect(url_for("myProfile") + "?status=failure")
 
 
 @app.route("/querySearch", methods=["POST"])
